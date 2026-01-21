@@ -1,8 +1,8 @@
-// Claude API integration with CORS proxy
+// Claude API integration via Netlify Functions
 
 window.ClaudeAPI = {
-    // Use CORS proxy for browser requests
-    API_URL: 'https://api.anthropic.com/v1/messages',
+    // Use Netlify Function instead of direct API
+    API_URL: '/.netlify/functions/analyze',
     
     getApiKey: function() {
         let apiKey = localStorage.getItem('anthropic_api_key');
@@ -55,23 +55,16 @@ window.ClaudeAPI = {
 Be detailed but concise. Format your response clearly.`
         });
 
-        const requestBody = {
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 4096,
-            messages: [{ role: 'user', content }]
-        };
-
         try {
-            // Direct API call - may fail in some browsers due to CORS
             const response = await fetch(this.API_URL, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01'
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(requestBody),
-                mode: 'cors'
+                body: JSON.stringify({
+                    apiKey: apiKey,
+                    messages: [{ role: 'user', content }]
+                })
             });
 
             if (!response.ok) {
@@ -92,17 +85,12 @@ Be detailed but concise. Format your response clearly.`
                 .join('\n');
                 
         } catch (error) {
-            // If CORS error, provide helpful message
-            if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-                throw new Error('Browser security restrictions prevent direct API calls. Please use one of these solutions:\n\n1. Use a CORS proxy service\n2. Deploy a backend server\n3. Use the Claude.ai interface directly\n\nTechnical: CORS policy blocks direct browser-to-API requests.');
-            }
-            
+            console.error('Error:', error);
             throw error;
         }
     },
 
     async askFollowUp(file, messages, question) {
-        // Similar implementation as analyzeDocument
         const apiKey = this.getApiKey();
         if (!apiKey) {
             throw new Error('API key is required');
@@ -134,16 +122,12 @@ Be detailed but concise. Format your response clearly.`
             const response = await fetch(this.API_URL, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 4096,
+                    apiKey: apiKey,
                     messages: conversationHistory
-                }),
-                mode: 'cors'
+                })
             });
 
             if (!response.ok) {
@@ -162,9 +146,7 @@ Be detailed but concise. Format your response clearly.`
                 .join('\n');
                 
         } catch (error) {
-            if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-                throw new Error('Browser CORS restriction. See console for details.');
-            }
+            console.error('Error:', error);
             throw error;
         }
     },
