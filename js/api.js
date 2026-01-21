@@ -23,8 +23,11 @@ window.ClaudeAPI = {
     async analyzeDocument(file) {
         const apiKey = this.getApiKey();
         if (!apiKey) {
-            throw new Error('API key is required');
+            throw new Error('API key is required. Please enter your Anthropic API key.');
         }
+
+        console.log('API Key exists:', !!apiKey);
+        console.log('API Key starts with:', apiKey.substring(0, 15) + '...');
 
         const base64Data = await this.fileToBase64(file);
         const mediaType = file.type || 'application/pdf';
@@ -55,16 +58,21 @@ window.ClaudeAPI = {
 Be detailed but concise. Format your response clearly.`
         });
 
+        const requestBody = {
+            apiKey: apiKey.trim(),
+            messages: [{ role: 'user', content }]
+        };
+
+        console.log('Sending request to:', this.API_URL);
+        console.log('Request body structure:', { apiKey: '***', messages: 'included' });
+
         try {
             const response = await fetch(this.API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    apiKey: apiKey,
-                    messages: [{ role: 'user', content }]
-                })
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
