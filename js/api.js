@@ -1,5 +1,19 @@
 // Claude API integration via Netlify Functions
 
+// Clean markdown formatting from text
+function cleanMarkdown(text) {
+    return text
+        .replace(/^#{1,6}\s+/gm, '')      // Remove heading markers
+        .replace(/\*\*(.+?)\*\*/g, '$1')  // Remove bold **text**
+        .replace(/\*(.+?)\*/g, '$1')      // Remove italic *text*
+        .replace(/__(.+?)__/g, '$1')      // Remove bold __text__
+        .replace(/_(.+?)_/g, '$1')        // Remove italic _text_
+        .replace(/`(.+?)`/g, '$1')        // Remove inline code
+        .replace(/^[-*+]\s+/gm, '• ')     // Convert list markers to bullets
+        .replace(/^\d+\.\s+/gm, '')       // Remove numbered list markers
+        .trim();
+}
+
 window.ClaudeAPI = {
     // Use Netlify Function instead of direct API
     API_URL: '/.netlify/functions/analyze',
@@ -81,11 +95,12 @@ Be detailed but concise. Format your response clearly.`
             }
 
             const data = await response.json();
-            return data.content
+            const rawText = data.content
                 .filter(item => item.type === 'text')
                 .map(item => item.text)
                 .join('\n');
-                
+            return cleanMarkdown(rawText);
+
         } catch (error) {
             throw error;
         }
@@ -141,11 +156,12 @@ Be detailed but concise. Format your response clearly.`
             }
 
             const data = await response.json();
-            return data.content
+            const rawText = data.content
                 .filter(item => item.type === 'text')
                 .map(item => item.text)
                 .join('\n');
-                
+            return cleanMarkdown(rawText);
+
         } catch (error) {
             throw error;
         }

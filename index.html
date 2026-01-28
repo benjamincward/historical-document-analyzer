@@ -55,6 +55,20 @@
             </svg>
         );
 
+        // Clean markdown formatting from text
+        const cleanMarkdown = (text) => {
+            return text
+                .replace(/^#{1,6}\s+/gm, '')      // Remove heading markers
+                .replace(/\*\*(.+?)\*\*/g, '$1')  // Remove bold **text**
+                .replace(/\*(.+?)\*/g, '$1')      // Remove italic *text*
+                .replace(/__(.+?)__/g, '$1')      // Remove bold __text__
+                .replace(/_(.+?)_/g, '$1')        // Remove italic _text_
+                .replace(/`(.+?)`/g, '$1')        // Remove inline code
+                .replace(/^[-*+]\s+/gm, '• ')     // Convert list markers to bullets
+                .replace(/^\d+\.\s+/gm, '')       // Remove numbered list markers
+                .trim();
+        };
+
         // API Helper - Uses Netlify Function proxy to avoid CORS issues
         const ClaudeAPI = {
             API_URL: '/.netlify/functions/analyze',
@@ -129,7 +143,8 @@
                 }
 
                 const data = await response.json();
-                return data.content.filter(i => i.type === 'text').map(i => i.text).join('\n');
+                const rawText = data.content.filter(i => i.type === 'text').map(i => i.text).join('\n');
+                return cleanMarkdown(rawText);
             }
         };
 
