@@ -55,8 +55,10 @@
             </svg>
         );
 
-        // API Helper
+        // API Helper - Uses Netlify Function proxy to avoid CORS issues
         const ClaudeAPI = {
+            API_URL: '/.netlify/functions/analyze',
+
             getApiKey() {
                 let key = localStorage.getItem('anthropic_api_key');
                 if (!key) {
@@ -106,16 +108,13 @@
 5. Preservation Assessment`
                 });
 
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                const response = await fetch(this.API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': apiKey,
-                        'anthropic-version': '2023-06-01'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'claude-sonnet-4-20250514',
-                        max_tokens: 4096,
+                        apiKey: apiKey,
                         messages: [{ role: 'user', content }]
                     })
                 });
@@ -125,7 +124,7 @@
                         this.clearApiKey();
                         throw new Error('Invalid API key. Please re-enter.');
                     }
-                    const error = await response.json();
+                    const error = await response.json().catch(() => ({}));
                     throw new Error(error.error?.message || 'API request failed');
                 }
 

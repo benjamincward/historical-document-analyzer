@@ -26,9 +26,6 @@ window.ClaudeAPI = {
             throw new Error('API key is required. Please enter your Anthropic API key.');
         }
 
-        console.log('API Key exists:', !!apiKey);
-        console.log('API Key starts with:', apiKey.substring(0, 15) + '...');
-
         const base64Data = await this.fileToBase64(file);
         const mediaType = file.type || 'application/pdf';
         const content = [];
@@ -63,9 +60,6 @@ Be detailed but concise. Format your response clearly.`
             messages: [{ role: 'user', content }]
         };
 
-        console.log('Sending request to:', this.API_URL);
-        console.log('Request body structure:', { apiKey: '***', messages: 'included' });
-
         try {
             const response = await fetch(this.API_URL, {
                 method: 'POST',
@@ -93,7 +87,6 @@ Be detailed but concise. Format your response clearly.`
                 .join('\n');
                 
         } catch (error) {
-            console.error('Error:', error);
             throw error;
         }
     },
@@ -154,7 +147,6 @@ Be detailed but concise. Format your response clearly.`
                 .join('\n');
                 
         } catch (error) {
-            console.error('Error:', error);
             throw error;
         }
     },
